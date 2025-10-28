@@ -19,6 +19,6 @@ if %errorlevel% neq 0 (
   exit /b 1
 )
 
-pnputil /enable-device "%DEVICE_ID%" >nul 2>&1
+pnputil /disable-device "%DEVICE_ID%" >nul 2>&1
 echo Test complete! Did it work?
 pause
