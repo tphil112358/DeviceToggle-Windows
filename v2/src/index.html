@@ -1,0 +1,165 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Device Toggle Installer</title>
+<style>
+body {
+  font-family: Segoe UI, sans-serif;
+  margin: 2em;
+  background-color: #f7f9fc;
+}
+h2 {
+  color: #333;
+}
+label {
+  font-weight: 600;
+}
+select, input, button {
+  display: block;
+  margin-top: 0.8em;
+  width: 100%;
+  padding: 0.6em;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+input[type="text"] {
+  margin-bottom: 0.5em;
+}
+button {
+  background-color: #0078d7;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-top: 1.5em;
+}
+button:hover {
+  background-color: #005ea6;
+}
+.note {
+  font-size: 0.9em;
+  color: #666;
+  font-style: italic;
+  margin-top: 0.5em;
+}
+#status {
+  margin-top: 1em;
+  font-size: 0.9em;
+  color: #333;
+}
+</style>
+</head>
+<body>
+<h2>Device Toggle Installer</h2>
+
+<label for="deviceSearch">Search devices:</label>
+<input type="text" id="deviceSearch" placeholder="Type to filter devices...">
+
+<label for="deviceList">Select a device to toggle:</label>
+<select id="deviceList">
+  <option value="">Loading devices...</option>
+</select>
+
+<label for="hotkeySelect">Select a hotkey:</label>
+<select id="hotkeySelect">
+  <option value="ctrl1">Ctrl + 1</option>
+  <option value="ctrl2">Ctrl + 2</option>
+  <option value="ctrl3">Ctrl + 3</option>
+  <option value="ctrl4">Ctrl + 4</option>
+  <option value="ctrl5">Ctrl + 5</option>
+  <option value="ctrl6">Ctrl + 6</option>
+  <option value="ctrl7">Ctrl + 7</option>
+  <option value="ctrl8">Ctrl + 8</option>
+  <option value="ctrl9">Ctrl + 9</option>
+  <option value="numlock">NumLock</option>
+</select>
+
+<p class="note">
+  To create a custom hotkey or replace the precompiled executable, see the project's README for instructions on compiling or replacing the .exe file.
+</p>
+
+<button id="installBtn">Install</button>
+<p id="status"></p>
+
+<script>
+window.addEventListener('DOMContentLoaded', async () => {
+  console.log('DOM Content Loaded');
+  const deviceSelect = document.getElementById('deviceList');
+  const status = document.getElementById('status');
+  status.textContent = 'Fetching connected devices...';
+
+  try {
+    const groupedDevices = await window.api.getDevices();
+    console.log('Got grouped devices:', groupedDevices);
+
+    if (!groupedDevices.length) {
+      const option = document.createElement('option');
+      option.text = 'No devices found (try running as admin)';
+      deviceSelect.add(option);
+      status.textContent = 'No devices detected.';
+      return;
+    }
+
+    groupedDevices.forEach(group => {
+      const optgroup = document.createElement('optgroup');
+      optgroup.label = group.className || "Other Devices";
+
+      group.devices.forEach(device => {
+        const option = document.createElement('option');
+        option.value = device.id;
+        option.textContent = `${device.description} (${device.id})`;
+        optgroup.appendChild(option);
+      });
+
+      deviceSelect.appendChild(optgroup);
+    });
+
+    status.textContent = 'Devices loaded. Select one to continue.';
+  } catch (err) {
+    console.error('Error loading devices:', err);
+    status.textContent = 'Failed to fetch devices (try running as admin).';
+  }
+});
+
+document.getElementById('installBtn').addEventListener('click', async () => {
+  const id = document.getElementById('deviceList').value;
+  const key = document.getElementById('hotkeySelect').value;
+  const status = document.getElementById('status');
+
+  if (!id) {
+    status.textContent = 'Please select a device first.';
+    return;
+  }
+
+  status.textContent = 'Installing...';
+  try {
+    const res = await window.api.install(id, key);
+
+    // ✅ Clear the UI after successful installation
+    document.body.innerHTML = `
+      <div style="text-align:center; margin-top: 100px;">
+        <h2>✅ Success!</h2>
+        <p>DeviceToggle has been installed successfully at:</p>
+        <p style="font-family: monospace; color: #333;">${res.exePath}</p>
+        <button id="finishBtn" style="margin-top: 1.5em; padding: 0.6em 1.2em;">Finish</button>
+      </div>
+    `;
+
+    // ✅ Finish button closes the window
+    document.getElementById('finishBtn').addEventListener('click', () => {
+      window.close();
+    });
+
+  } catch (e) {
+    console.error(e);
+    status.textContent = 'Installation failed. Check console for details.';
+  }
+});
+</script>
+
+
+</body>
+</html>
