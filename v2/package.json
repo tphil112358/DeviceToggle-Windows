@@ -1,0 +1,58 @@
+{
+  "name": "device-toggle-installer",
+  "version": "1.0.0",
+  "description": "Simple Electron-based Windows installer for device toggling",
+  "main": "dist/installer.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "tsc",
+    "dist": "npm run build && electron-builder"
+  },
+  "build": {
+    "appId": "com.typhi.devicetoggle",
+    "productName": "DeviceToggle Installer",
+    "directories": {
+      "output": "release",
+      "buildResources": "assets"
+    },
+    "files": [
+      "dist/**/*",
+      "src/preload.js",
+      "src/index.html",
+      "src/precompiled/**/*",
+      "src/templates/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "src/precompiled/",
+        "to": "precompiled"
+      },
+      {
+        "from": "src/templates/",
+        "to": "templates"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "src/icon.ico",
+      "requestedExecutionLevel": "requireAdministrator",
+      "certificateFile": "cert.pfx",
+      "certificatePassword": "fnekfebqjfkwfjwolfw(@OInfkmcjewkoo2i32y584orm#$IOJMDWDnqwjdnasj9dgoi4njqwedscxcvbr",
+      "publisherName": "Tyler Phillips"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "DeviceToggle"
+    }
+  },
+  "devDependencies": {
+    "electron": "^32.0.0",
+    "electron-builder": "^25.0.0",
+    "typescript": "^5.6.0",
+    "@types/node": "^22.0.0"
+  }
+}
